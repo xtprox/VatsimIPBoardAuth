@@ -6,7 +6,9 @@ Anthony Lawrence <freelancer@anthonylawrence.me.uk>
 
 ipBoard SSO integration for Cert's SSO.
 
-Clone this repository and then copy the files into the root of your ipBoard installation (leaving the directory structure in-tact).
+1) Clone this repository somewhere.
+2) Run git submodule update --init --recursive to download the demo code.
+3) Copy all files into the root of your ipBoard installation (keeping the directory structure in-tact).
 
 Edit the SSO settings in vatsimSSO/config.php, as per your guidance from the SSO developers.
 
