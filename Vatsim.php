@@ -19,7 +19,6 @@ class _Vatsim extends LoginAbstract
      */
     public function loginForm($url, $ucp = false)
     {
-        if(!isset($_GET['debug'])){ return; }
         $redirectUrl = \IPS\Http\Url::internal('login/?loginProcess=vatsim', 'none');
         return "<form action='{$redirectUrl}' method='post'><input type='submit' class='ipsButton ipsButton_primary' value='VATSIM SSO' /></form>";
     }
