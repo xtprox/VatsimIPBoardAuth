@@ -1,0 +1,4 @@
+[submodule "vatsimSso"]
+	path = vatsimSso
+	url = https://github.com/KHardern/VatsimSSO.git
+	branch = master
