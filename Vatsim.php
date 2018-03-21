@@ -177,4 +177,16 @@ class _Vatsim extends LoginAbstract
     {
         return false;
     }
+    
+    /**
+     * Can a member sign in with this login handler?
+     * Used to ensure when a user disassociates a social login that they have some other way of logging in
+     *
+     * @param	\IPS\Member	$member	The member
+     * @return	bool
+     */
+    public function canProcess(\IPS\Member $member){
+      return (bool) $member->vatsim_cid;
+    }
+    
 }
