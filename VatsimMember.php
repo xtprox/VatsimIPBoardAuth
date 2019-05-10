@@ -23,5 +23,5 @@ if ( !defined( '\IPS\SUITE_UNIQUE_KEY' ) )
  */
 class _VatsimMember extends \IPS\Member
 {
-	protected static $databaseIdFields = array( 'name', 'email', 'fb_uid', 'live_id', 'google_id', 'linkedin_id', 'ipsconnect_id', 'twitter_id', "vatsim_cid" );
+    protected static $databaseIdFields = array( 'name', 'email', "vatsim_cid" );
 }

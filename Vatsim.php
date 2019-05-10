@@ -19,8 +19,8 @@ class _Vatsim extends LoginAbstract
      */
     public function loginForm($url, $ucp = false)
     {
-        $redirectUrl = \IPS\Http\Url::internal('login/?loginProcess=vatsim', 'none');
-        return "<form action='{$redirectUrl}' method='post'><input type='submit' class='ipsButton ipsButton_primary' value='VATSIM SSO' /></form>";
+        $redirectUrl = \IPS\Http\Url::internal("login/?loginProcess=vatsim", "none");
+        return "<a href='$redirectUrl' type='submit' class='ipsButton ipsButton_primary'>VATSIM SSO</a>";
     }
 
     /**
@@ -45,29 +45,30 @@ class _Vatsim extends LoginAbstract
             require_once "VatsimSSO/SSO.class.php";
 
             $ssoRequest = new \IPS\Login\VatsimSSO\SSO($this->settings["sso_base"], $this->settings["sso_key"], $this->settings["sso_secret"], "RSA", $this->settings["sso_rsa_key"]);
-            $ssoReturn = \IPS\Http\Url::internal("login/?loginProcess=vatsim&return=true", "none");
+            $ssoReturn = \IPS\Http\Url::internal("index.php?login&loginProcess=vatsim&return=true", "none");
 
             // Deal with the return!
-            if(isset($_GET['return'])){
+            if(isset(\IPS\Request::i()->return)){
+
                 // Cancelled
-                if(isset($_GET['oauth_cancel'])){
+                if(isset(\IPS\Request::i()->oauth_cancel)){
                     \IPS\Output::i()->error( 'login_vatsim_cancelled', 'vs1001', 408, '' );
                     return;
                 }
 
                 // Fine?
-                if(isset($_GET['oauth_verifier'])){
-                    if(isset($_SESSION['sso_session_oauth']) && isset($_SESSION['sso_session_oauth']["key"]) && isset($_SESSION['sso_session_oauth']["secret"])){
-                        if(@$_GET['oauth_token'] != $_SESSION['sso_session_oauth']["key"]){
+                if(isset(\IPS\Request::i()->oauth_verifier)){
+                    if(isset(\IPS\Request::i()->cookie['sso_session_oauth']) && isset(\IPS\Request::i()->cookie['sso_session_oauth_key']) && isset(\IPS\Request::i()->cookie['sso_session_oauth_secret'])){
+                        if(@\IPS\Request::i()->oauth_token != \IPS\Request::i()->cookie['sso_session_oauth_key']){
                             throw new \IPS\Login\Exception( 'generic_error', \IPS\Login\Exception::INTERNAL_ERROR );
                         }
 
-                        if(@!isset($_GET['oauth_verifier'])){
+                        if(@!isset(\IPS\Request::i()->oauth_verifier)){
                             throw new \IPS\Login\Exception( 'generic_error', \IPS\Login\Exception::INTERNAL_ERROR );
                         }
 
                         // Get the user details!
-                        $member = $ssoRequest->checkLogin($_SESSION['sso_session_oauth']["key"], $_SESSION['sso_session_oauth']["secret"], @$_GET['oauth_verifier']);
+                        $member = $ssoRequest->checkLogin(\IPS\Request::i()->cookie['sso_session_oauth_key'], \IPS\Request::i()->cookie['sso_session_oauth_secret'], @\IPS\Request::i()->oauth_verifier);
 
                         if(!$member){
                             throw new \IPS\Login\Exception( 'generic_error', \IPS\Login\Exception::INTERNAL_ERROR );
@@ -94,7 +95,6 @@ class _Vatsim extends LoginAbstract
                             $member->save();
                             return $member;
                         }
-
                         // We shouldn't get here.
                         throw new \IPS\Login\Exception( 'generic_error', \IPS\Login\Exception::INTERNAL_ERROR );
                     }
@@ -102,14 +102,14 @@ class _Vatsim extends LoginAbstract
             }
 
             // Let's deal with the token request and send them packing for a bit.
+
             $token = $ssoRequest->requestToken($ssoReturn, false, false);
 
             if($token){
-                $_SESSION['sso_session_oauth'] = [
-                    "key" => (string) $token->token->oauth_token,
-                    "secret" => (string) $token->token->oauth_token_secret,
-                ];
 
+                \IPS\Request::i()->setcookie('sso_session_oauth','tstval',\IPS\DateTime::ts( time()+648000));
+                \IPS\Request::i()->setcookie('sso_session_oauth_key',(string) $token->token->oauth_token,\IPS\DateTime::ts( time()+648000));
+                \IPS\Request::i()->setcookie('sso_session_oauth_secret',(string) $token->token->oauth_token_secret,\IPS\DateTime::ts( time()+648000));
                 $ssoRequest->sendToVatsim();
                 return;
             }
@@ -177,16 +177,9 @@ class _Vatsim extends LoginAbstract
     {
         return false;
     }
-    
-    /**
-     * Can a member sign in with this login handler?
-     * Used to ensure when a user disassociates a social login that they have some other way of logging in
-     *
-     * @param	\IPS\Member	$member	The member
-     * @return	bool
-     */
-    public function canProcess(\IPS\Member $member){
-      return (bool) $member->vatsim_cid;
+
+    public function canProcess(\IPS\Member $member)
+    {
+        return false;
     }
-    
 }
