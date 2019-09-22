@@ -45,7 +45,7 @@ class _Vatsim extends LoginAbstract
             require_once "VatsimSSO/SSO.class.php";
 
             $ssoRequest = new \IPS\Login\VatsimSSO\SSO($this->settings["sso_base"], $this->settings["sso_key"], $this->settings["sso_secret"], "RSA", $this->settings["sso_rsa_key"]);
-            $ssoReturn = \IPS\Http\Url::internal("index.php?login&loginProcess=vatsim&return=true", "none");
+            $ssoReturn = \IPS\Http\Url::internal("index.php?login&loginProcess=vatsim&remember_me=1&return=true", "none");
 
             // Deal with the return!
             if(isset(\IPS\Request::i()->return)){
